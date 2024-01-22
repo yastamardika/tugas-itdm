@@ -11,12 +11,18 @@ class ProductController {
 
     public function getAllProducts() {
         $products = $this->productModel->getAllProducts();
+        header("Access-Control-Allow-Origin: *"); // Allow requests from any origin
+
+        // Other CORS headers
+        header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
+        header("Access-Control-Allow-Headers: Content-Type");
         echo json_encode($products);
     }
 
     public function getProductById($productId) {
         $product = $this->productModel->getProductById($productId);
         // Implement logic to render the view with product data
+        
         echo json_encode($product);
     }
 

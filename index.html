@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add and Get Products</title>
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.js" defer></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body>
+
+
+    <div class="container mx-auto p-4">
+
+        <h2 class="text-2xl font-bold mb-4">Add and Get Products</h2>
+    
+        <!-- Add Product Form -->
+        <form id="addProductForm" onsubmit="addProduct()">
+            <div class="mb-4">
+                <label for="productName" class="block text-sm font-medium text-gray-600">Product Name:</label>
+                <input type="text" id="productName" name="productName" x-model="productName" required
+                       class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+            </div>
+    
+            <div class="mb-4">
+                <label for="productDescription" class="block text-sm font-medium text-gray-600">Product Description:</label>
+                <textarea id="productDescription" name="productDescription" x-model="productDescription" required
+                          class="mt-1 p-2 block w-full rounded-md border border-gray-300"></textarea>
+            </div>
+    
+            <div class="mb-4">
+                <label for="productPrice" class="block text-sm font-medium text-gray-600">Product Price:</label>
+                <input type="text" id="productPrice" name="productPrice" x-model="productPrice" required
+                       class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+            </div>
+            <div class="mb-4">
+                <label for="productCostPrice" class="block text-sm font-medium text-gray-600">Cost Price:</label>
+                <input type="text" id="productCostPrice" name="productCostPrice" x-model="productPrice" required
+                       class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+            </div>
+            <div class="mb-4">
+                <label for="stockQuantity" class="block text-sm font-medium text-gray-600">Stock Quantity:</label>
+                <input type="text" id="stockQuantity" name="stockQuantity" x-model="productPrice" required
+                       class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+            </div>
+    
+            <button type="submit">
+                    <class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300">
+                Add Product
+            </button>
+        </form>
+    
+        <hr class="my-6">
+    
+        <!-- Get All Products Button -->
+        <button type="button" onclick="getAllProducts()" 
+                class="bg-green-500 text-white mb-5 py-2 px-4 rounded hover:bg-green-600 focus:outline-none focus:ring focus:border-green-300">
+            Get All Products
+        </button>
+    
+        <!-- Display All Products -->
+        <div id="productList" x-html="productListHtml" class="mb-5"></div>
+    
+        
+        
+    </div>
+
+<script>
+function addProduct() {
+    // Get form data
+    var productName = $("#productName").val();
+    var productDescription = $("#productDescription").val();
+    var productPrice = $("#productPrice").val();
+    var productCostPrice = $("#productCostPrice").val();
+    var stock_quantity = $("#stockQuantity").val();
+
+    // Create data object
+    var data = {
+        name: productName,
+        description: productDescription,
+        price: productPrice,
+        cost_price: productCostPrice,
+        stock_quantity: stockQuantity
+    };
+
+    // Make AJAX request
+    $.ajax({
+        type: "POST",
+        url: "http://localhost/whizzkid-be/index.php?controller=Product&action=addProduct", // Replace with the actual URL of your PHP script
+        data: data,
+        success: function(response) {
+            // Handle success, e.g., show a success message
+            alert("Product added successfully!");
+            // You can also redirect or perform other actions based on the response
+        },
+        error: function(error) {
+            // Handle error, e.g., show an error message
+            alert("Error adding product: " + error.responseText);
+        }
+    });
+}
+
+function getAllProducts() {
+    // Make AJAX request to get all products
+    $.ajax({
+        type: "GET",
+        url: "http://localhost/whizzkid-be/index.php?controller=Product&action=getAllProducts", // Replace with the actual URL of your PHP script
+        success: function(response) {
+            // Handle success, e.g., display the products
+            console.log(response);
+            let data = JSON.parse(response); 
+            displayProducts(data);
+        },
+        error: function(error) {
+            // Handle error, e.g., show an error message
+            alert("Error getting products: " + error.responseText);
+        }
+    });
+}
+
+
+function displayProducts(products) {
+    // Display the products in the product list div
+    var productListDiv = $("#productList");
+    productListDiv.empty(); // Clear previous content
+
+    if (products.length > 0) {
+        // Build HTML for product list
+        var productListHTML = "<h3>All Products:</h3><ul>";
+        for (let index = 0; index < products.length; index++) {
+            // const element = array[index];
+            // productListHTML += "<li>" + products[index].name + " - $" + products[index].price + "</li>";
+            productListHTML += `
+                <li class="p-4 border rounded border-gray-300 mb-3">
+                    <p class="text-lg font-semibold mb-2" x-text="product.name">${products[index].name} </p>
+                    <p class="text-gray-500 mb-2" x-text="product.description">${products[index].description}</p>
+                    <p class="text-green-600 font-bold" x-text="'$' + product.price.toFixed(2)">$${products[index].price}</p>
+                    <div class="mt-4 space-x-2">
+                        <button class="btn bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300" onclick="my_modal_2.showModal(${products[index].product_id})">Edit</button>
+                        
+                        <button type="button" onclick="deleteProduct(${products[index].product_id})"
+                                class="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 focus:outline-none focus:ring focus:border-red-300">
+                            Delete
+                        </button>
+                    </div>
+                </li>
+                <dialog id="my_modal_2" class="modal">
+                    <div class="modal-box">
+                        <h3 class="font-bold text-lg">Edit ${products[index].name}</h3>
+                        <p class="py-4">Press ESC key or click outside to close</p>
+                    </div>
+                    <form id="editProductForm">
+                        <div class="mb-4">
+                            <label for="productName" class="block text-sm font-medium text-gray-600">Product Name:</label>
+                            <input type="text" id="productName" name="editProductName" value="${products[index].name}" x-model="productName" required
+                                class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                        </div>
+                
+                        <div class="mb-4">
+                            <label for="productDescription" class="block text-sm font-medium text-gray-600">Product Description:</label>
+                            <input id="productDescription" name="editProductDescription" value="${products[index].description}" x-model="productDescription" required
+                                    class="mt-1 p-2 block w-full rounded-md border border-gray-300"></input>
+                        </div>
+                
+                        <div class="mb-4">
+                            <label for="productPrice" class="block text-sm font-medium text-gray-600">Product Price:</label>
+                            <input type="text" id="productPrice" name="editProductPrice" value="${products[index].price}" x-model="productPrice" required
+                                class="mt-1 p-2 block w-full rounded-md border border-gray-300">
+                        </div>
+                
+                        <button type="button" onClick="editProduct(${products[index].product_id})"
+                                class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300">
+                            Edit Product
+                        </button>
+                    </form>
+                </dialog>
+                `
+        }
+        // arr.forEach(function(product) {
+        // });
+        productListHTML += "</ul>";
+        productListDiv.html(productListHTML);
+    } else {
+        productListDiv.html("<p>No products available.</p>");
+    }
+}
+
+function deleteProduct(id) {
+    // Make AJAX request to get all products
+    $.ajax({
+        type: "GET",
+        url: `http://localhost/whizzkid-be/index.php?controller=Product&action=deleteProduct&params=${id}`, // Replace with the actual URL of your PHP script
+        success: function(response) {
+            // Handle success, e.g., display the products
+            console.log(response);
+            let data = JSON.parse(response); 
+            getAllProducts();
+        },
+        error: function(error) {
+            // Handle error, e.g., show an error message
+            alert("Error getting products: " + error.responseText);
+        }
+    });
+}
+function editProduct(id) {
+    // Get form data
+    var productName = $("#editProductName").val();
+    var productDescription = $("#editProductDescription").val();
+    var productPrice = $("#peditProductPrice").val();
+
+    // Create data object
+    var data = {
+        name: productName,
+        description: productDescription,
+        price: productPrice
+    };
+
+    // Make AJAX request
+    $.ajax({
+        type: "POST",
+        url: `http://localhost/whizzkid-be/index.php?controller=Product&action=updateProduct&params=${id}`, // Replace with the actual URL of your PHP script
+        data: data,
+        success: function(response) {
+            // Handle success, e.g., show a success message
+            alert("Product updated successfully!");
+            // You can also redirect or perform other actions based on the response
+        },
+        error: function(error) {
+            // Handle error, e.g., show an error message
+            alert("Error adding product: " + error.responseText);
+        }
+    });
+}
+</script>
+
+</body>
+</html>
